@@ -5,6 +5,7 @@ const defaultProps = {
   containerBorderColor: '#E5EAF5',
   gridBorderColor: '#E5EAF5',
   withGrid: true,
+  horLinesCount: 6,
 };
 
 function priceWall(element, props = {}) {
@@ -20,20 +21,18 @@ function priceWall(element, props = {}) {
   const rootStyles = window.getComputedStyle(root);
 
   if (props.responsive) {
-    window.addEventListener('resize', resizeToFit);
+    window.addEventListener('resize', update);
   }
 
-  resizeToFit();
-
-  function addBorder() {
+  function drawStage() {
     ctx.strokeStyle = props.gridBorderColor;
-    ctx.strokeRect(0, 0, canvas.width - 8, canvas.height);
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
   }
 
   function addGrid() {
-    const vertGapSize = canvas.height / 6;
+    const vertGapSize = canvas.height / props.horLinesCount;
     const lineWidth = canvas.width;
-    for (let i = 1; i < 6; i++) {
+    for (let i = 1; i < props.horLinesCount; i++) {
       const y = vertGapSize * i;
       ctx.strokeStyle = props.gridBorderColor;
       ctx.beginPath();
@@ -45,10 +44,12 @@ function priceWall(element, props = {}) {
 
   function drawCurrentPrice() {
     const x = canvas.width / 2;
+    const y = canvas.height - canvas.height / props.horLinesCount;
+    ctx.lineWidth = 0.5
     ctx.strokeStyle = '#969696';
     ctx.beginPath();
     ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
+    ctx.lineTo(x, y);
     ctx.stroke();
 
     const text = 'Current Price';
@@ -69,11 +70,10 @@ function priceWall(element, props = {}) {
     canvas.width = parseFloat(rootStyles.width);
     canvas.height = Math.min(canvas.width / 2.03, 350);
     root.appendChild(canvas);
-    update();
   }
 
   function remove() {
-    window.removeEventListener('resize', resizeToFit);
+    window.removeEventListener('resize', update);
     root.removeChild(canvasEl);
   }
 
@@ -83,9 +83,10 @@ function priceWall(element, props = {}) {
 
   function update(data) {
     clearCanvas();
+    resizeToFit();
+    drawStage();
     addGrid();
     drawCurrentPrice();
-    addBorder();
   }
 
   return {
