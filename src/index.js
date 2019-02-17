@@ -5,12 +5,16 @@ const defaultProps = {
   containerBorderColor: '#E5EAF5',
   gridBorderColor: '#E5EAF5',
   withGrid: true,
-  horLinesCount: 6,
+  horLinesCount: 8,
 };
 
 function priceWall(element, props = {}) {
   if (!element) {
     throw new Error('must provide id or class name of graph container element');
+  }
+
+  if (!props.title) {
+    throw new Error('title must be present in props');
   }
 
   props = { ...defaultProps, ...props };
@@ -42,26 +46,37 @@ function priceWall(element, props = {}) {
     }
   }
 
+  function addTitle() {
+    const fontSize = 16;
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'center';
+    ctx.font = `${fontSize}px Montserrat,sans-serif`;
+    ctx.fillText(props.title, canvas.width / 2, (canvas.height / props.horLinesCount) - fontSize);
+    ctx.restore();
+  }
+
   function drawCurrentPrice() {
+    const gapBetweenLines = canvas.height / props.horLinesCount;
     const x = canvas.width / 2;
-    const y = canvas.height - canvas.height / props.horLinesCount;
+    const y = canvas.height - gapBetweenLines;
     ctx.lineWidth = 0.5
-    ctx.strokeStyle = '#969696';
+    ctx.strokeStyle = '#909090';
     ctx.beginPath();
-    ctx.moveTo(x, 0);
+    ctx.moveTo(x, gapBetweenLines);
     ctx.lineTo(x, y);
     ctx.stroke();
 
     const text = 'Current Price';
+    const fontSize = 11;
     const textMeasurements = ctx.measureText(text);
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.font = '11px Verdana';
+    ctx.textBaseline = 'center';
+    ctx.font = `${fontSize}px Montserrat,sans-serif`;
     ctx.save();
-    ctx.translate(textMeasurements.width / 2, textMeasurements.height / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Current Price', -textMeasurements.width + 15, canvas.width / 2);
+    ctx.fillText(text, -textMeasurements.width, canvas.width / 2 + fontSize);
     ctx.restore();
   }
 
@@ -86,6 +101,7 @@ function priceWall(element, props = {}) {
     resizeToFit();
     drawStage();
     addGrid();
+    addTitle();
     drawCurrentPrice();
   }
 
@@ -95,7 +111,7 @@ function priceWall(element, props = {}) {
   };
 }
 
-const graph = priceWall('#rokkex-root');
+const graph = priceWall('#rokkex-root', { title: 'ETH-BTC Market Depth' });
 graph.update();
 
 export default priceWall;
